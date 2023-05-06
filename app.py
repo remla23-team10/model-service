@@ -2,24 +2,25 @@ import pickle
 import joblib
 from flasgger import Swagger
 from flask import Flask, request
+from preprocessing import Preprocessing
 
 app = Flask(__name__)
 swagger = Swagger(app)
 cv = pickle.load(open("c1_BoW_Sentiment_Model.pkl", "rb"))
 classifier = joblib.load('c2_Classifier_Sentiment_Model')
+preprocesser = Preprocessing()
 
 prediction_map = {
     0: "negative",
     1: "positive"
 }
 
-
-# TODO: implement preprocess
 def preprocess(data):
-    return cv.transform([data]).toarray()[0]
+    msg = data['sms']['msg']
+    preprocessed = preprocesser.preprocess_review(msg)
+    return cv.transform([preprocessed]).toarray()
 
-
-@app.route('/', methods=['POST'])
+@app.post('/predict')
 def predict():
     """
     Make a prediction
@@ -44,7 +45,7 @@ def predict():
     """
     data = request.get_json()
     processed_input = preprocess(data)
-    prediction = classifier.predict([processed_input])[0]
+    prediction = classifier.predict(processed_input)[0]
     return {
         "result": prediction_map[prediction],
     }
