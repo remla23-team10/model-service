@@ -20,6 +20,7 @@ def preprocess(data):
     preprocessed = preprocesser.preprocess_review(msg)
     return cv.transform([preprocessed]).toarray()
 
+
 @app.post('/predict')
 def predict():
     """
@@ -49,5 +50,3 @@ def predict():
     return {
         "result": prediction_map[prediction],
     }
-
-app.run(host="0.0.0.0", port=8080, debug=True)
