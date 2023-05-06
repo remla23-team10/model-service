@@ -50,5 +50,4 @@ def predict():
         "result": prediction_map[prediction],
     }
 
-
 app.run(host="0.0.0.0", port=8080, debug=True)
