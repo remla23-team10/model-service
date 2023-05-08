@@ -2,21 +2,32 @@
 
 This is a Flask application that exposes an API to classify a given review as negative or positive. The app uses a machine learning model to classify the review. The model is fetched from https://github.com/remla23-team10/model-training.
 
-## Requirements
+## Run with Docker
 
-You can install the required dependencies running:
+Clone the repository, and build the app with
+
+```
+docker compose up --build
+```
+
+
+## Run without Docker
+
+You can also run the app without Docker. First install the required dependencies running:
 
 ```
 pip install -r requirements.txt
 ```
 
-## Usage
 
 To run the application, use the following command:
 
 ```
 gunicorn app:app
 ```
+
+## Usage
+
 
 By default, the application will run on `http://localhost:8000`.
 
@@ -28,7 +39,7 @@ The API endpoint is `/predict`. To make a prediction, send a POST request to the
 POST http://localhost:8000/predict
 
 {
-  "review": { "This is a test review."
+  "review": "This is a test review."
 }
 ```
 
