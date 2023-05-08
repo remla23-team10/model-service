@@ -1,24 +1,29 @@
-import pickle
+from urllib.request import urlopen
+
 import joblib
 from flasgger import Swagger
 from flask import Flask, request
+
 from preprocessing import Preprocessing
 
 app = Flask(__name__)
 swagger = Swagger(app)
-cv = pickle.load(open("c1_BoW_Sentiment_Model.pkl", "rb"))
-classifier = joblib.load('c2_Classifier_Sentiment_Model')
+classifier = joblib.load(
+    urlopen('https://github.com/remla23-team10/model-training/raw/main/Classifier_Sentiment_Model'))
 preprocesser = Preprocessing()
+preprocesser.vectorizer_from_url('https://github.com/remla23-team10/model-training/raw/main/BoW_Vectorizer.pkl')
 
 prediction_map = {
     0: "negative",
     1: "positive"
 }
 
+
 def preprocess(data):
-    msg = data['sms']['msg']
+    msg = data['review']
     preprocessed = preprocesser.preprocess_review(msg)
-    return cv.transform([preprocessed]).toarray()
+    return preprocesser.transform([preprocessed])
+
 
 @app.post('/predict')
 def predict():
@@ -34,21 +39,24 @@ def predict():
           required: True
           schema:
             type: object
-            required: sms
             properties:
-                msg:
-                    type: string
-                    example: This is an example msg.
+              review:
+                type: string
+                example: This is an example msg.
     responses:
       200:
-        description: Some result
+        description: prediction of review being positive or negative
+        schema:
+          type: object
+          properties:
+            sentiment:
+              type: string
+              enum: [negative, positive]
+              example: negative
     """
     data = request.get_json()
     processed_input = preprocess(data)
     prediction = classifier.predict(processed_input)[0]
     return {
-        "result": prediction_map[prediction],
+        "sentiment": prediction_map[prediction],
     }
-
-
-app.run(host="0.0.0.0", port=8080, debug=True)
