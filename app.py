@@ -4,6 +4,8 @@ import joblib
 from flasgger import Swagger
 from flask import Flask, request
 
+import pandas as pd
+
 from preprocessing import Preprocessing
 
 app = Flask(__name__)
@@ -24,6 +26,11 @@ def preprocess(data):
     preprocessed = preprocesser.preprocess_review(msg)
     return preprocesser.transform([preprocessed])
 
+def getTrueSentiment(data):
+    if (data['sentiment'] == 'positive' and data['correct']) or (data['sentiment'] == 'negative' and not data['correct']):
+      return 1 
+    else:
+      return 0
 
 @app.post('/predict')
 def predict():
@@ -60,3 +67,49 @@ def predict():
     return {
         "sentiment": prediction_map[prediction],
     }
+
+@app.put('/incrementalTrain')
+def incremental_train():
+    """
+    Retrain the model to add new data, using partial_fit(), which retains previously learned features.
+    ---
+    consumes:
+      - application/json
+    parameters:
+        - name: input_data
+          in: body
+          description: message to be classified.
+          required: True
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                review:
+                  type: string
+                  example: This is an example review.
+                sentiment:
+                  type: string
+                  enum: [negative, positive]
+                  example: negative
+                correct:
+                  type: boolean
+                  example: false
+    responses:
+      204:
+        description: model updated successfully
+    """
+    data = request.get_json()
+
+    reviews = list(map(lambda x: x['review'], data))
+    sentiments = list(map(getTrueSentiment, data))
+
+    dataset = pd.DataFrame(data={'Review': reviews, 'liked': sentiments})
+
+    corpus = preprocesser.preprocess_dataset(dataset)
+    X = preprocesser.transform(corpus)
+    y = dataset.iloc[:, 1].values
+
+    classifier.partial_fit(X, y)
+
+    return ('', 204)
