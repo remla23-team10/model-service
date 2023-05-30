@@ -1,5 +1,6 @@
 from urllib.request import urlopen
 
+import os
 import joblib
 from flasgger import Swagger
 from flask import Flask, request
@@ -8,10 +9,13 @@ from preprocessing import Preprocessing
 
 app = Flask(__name__)
 swagger = Swagger(app)
-classifier = joblib.load(
-    urlopen('https://github.com/remla23-team10/model-training/raw/main/Classifier_Sentiment_Model'))
+
+classifier_url = stock_url = os.environ['CLASSIFIER_URL']
+vectorizer_url = stock_url = os.environ['VECTORIZER_URL']
+
+classifier = joblib.load(urlopen(classifier_url))
 preprocesser = Preprocessing()
-preprocesser.vectorizer_from_url('https://github.com/remla23-team10/model-training/raw/main/BoW_Vectorizer.pkl')
+preprocesser.vectorizer_from_url(vectorizer_url)
 
 prediction_map = {
     0: "negative",
