@@ -1,0 +1,26 @@
+stages:
+  get_data:
+    cmd: python3 src/data/get_data.py
+    deps:
+    - src/data/get_data.py
+    outs:
+    - data/external/a1_RestaurantReviews_HistoricDump.tsv
+  preprocess:
+    cmd: python3 src/features/preprocessing.py
+    deps:
+    - src/features/preprocessing.py
+    - data/external/a1_RestaurantReviews_HistoricDump.tsv
+    outs:
+    - data/processed/corpus.joblib
+  train:
+    cmd: python3 src/models/train_model.py
+    deps:
+    - src/models/train_model.py
+    - data/processed/corpus.joblib
+    - data/external/a1_RestaurantReviews_HistoricDump.tsv
+    outs:
+    - models/Classifier_Sentiment_Model.joblib
+    - data/processed/BoW_Vectorizer.joblib
+    metrics:
+    - models/metrics/Classifier_Sentiment_Model.json
+        # cache: false
