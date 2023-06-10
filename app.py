@@ -5,7 +5,7 @@ import joblib
 from flasgger import Swagger
 from flask import Flask, request
 
-from preprocessing import Preprocessing
+from restaurant_preprocessing import Preprocessing
 
 app = Flask(__name__)
 swagger = Swagger(app)
