@@ -6,8 +6,7 @@ from flasgger import Swagger
 from flask import Flask, request
 
 import pandas as pd
-
-from preprocessing import Preprocessing
+from restaurant_preprocessing import Preprocessing
 
 app = Flask(__name__)
 swagger = Swagger(app)
